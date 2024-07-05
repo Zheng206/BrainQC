@@ -1,0 +1,38 @@
+Package: BrainQC
+Title: Lesion or brain ROI QC after an automatic neuroimaging processing pipeline
+Version: 0.0.0.9000
+Author: Zheng Ren
+Maintainer: Zheng Ren <zren1422@gmail.com>
+Description: Allow users to run an interactive QC session through Rshiny.
+License: Artistic-2.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports:
+    stringr,
+    readr,
+    tidyverse,
+    dplyr,
+    parallel,
+    extrantsr,
+    neurobase,
+    fslr,
+    ANTsR, 
+    ANTsRCore,
+    oro.nifti,
+    freesurfer,
+    shiny,
+    bslib,
+    shinydashboard,
+    scales,
+    DT,
+    shinyjs,
+    papayaWidget
+Remotes: muschellij2/papayaWidget
+Depends: 
+    R (>= 2.10)
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
