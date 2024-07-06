@@ -292,11 +292,11 @@ shinyjs.removeImage = function() {
     output$image = renderPapaya({
       new_data = dataset()
       i = which(is.na(new_data[["evaluation"]]))[1]
+      shinyjs::js$removeImage()
       if(!is.na(i)){
         qc_list = result_list()
         dict_df = qc_list$dict
         roi_id = as.numeric(dict_df[which(dict_df$roi_general == input$lesion_id), "roi_index"])
-        shinyjs::js$removeImage()
         if(length(roi_id) == 1){
           papaya(img=list(qc_list$brain_imgs[[i]], qc_list$seg_imgs[[i]] == roi_id), sync_view = TRUE,
                  hide_toolbar = FALSE, hide_controls = TRUE,

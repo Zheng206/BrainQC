@@ -57,21 +57,16 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
     summary_df$evaluation = NA
     summary_df$note = NA
     if(qc_type == "lesion"){
-      brain_imgs = mclapply(img_files, function(x) readnii(x), mc.cores = cores)
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
         if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
-
-      seg_imgs = mclapply(1:length(seg_imgs), function(x) {
-        if(max(seg_imgs[[x]]) > 1){seg_imgs[[x]] = seg_imgs[[x]]>0}else{seg_imgs[[x]]}
-      }, mc.cores = cores)
 
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
         return(lesion_num)
         }, USE.NAMES = FALSE)
       summary_df$evaluator = NA
-      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion , "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs)
+      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion)
     }else if(qc_type == "freesurfer"){
       stats_files = list.files(main_path, pattern = "aseg.stat", recursive = TRUE, full.names = TRUE)
       stats_files = stats_files[which(grepl(subject, stats_files))]
@@ -99,7 +94,6 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
       index_df = data.frame(cbind(roi_name, roi_index, roi_general, default_roi))
       qc_list = list("summary_df" = summary_df, "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs, "dict" = index_df, "stat" = aseg_dfs)
     }else if(qc_type == "JLF"){
-      brain_imgs = mclapply(img_files, function(x) readnii(x), mc.cores = cores)
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       roi_general = c("Corpus Callosum", "Ventral DC", "Ventral DC", "Cerebellar Vermal Lobules", "Cerebellar Vermal Lobules", "Cerebellar Vermal Lobules",
                    "Cerebellum Exterior", "Cerebellum White Matter", "Cerebellum Exterior", "Cerebellum White Matter", "Accumbens Area", "Caudate",
@@ -167,15 +161,11 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
         vol_df = rbind(vol_df, tissue_df)
         return(vol_df)
       })
-      qc_list = list("summary_df" = summary_df, "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs, "dict" = index_df, "stat" = aseg_dfs)
+      qc_list = list("summary_df" = summary_df, "seg_imgs" = seg_imgs, "dict" = index_df, "stat" = aseg_dfs)
     }else if(qc_type == "PRL"){
-      brain_imgs = mclapply(img_files, function(x) readnii(x), mc.cores = cores)
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
         if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
-      seg_imgs = mclapply(1:length(seg_imgs), function(x) {
-        if(max(seg_imgs[[x]]) > 1){seg_imgs[[x]] = seg_imgs[[x]]>0}else{seg_imgs[[x]]}
-      }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
         return(lesion_num)
@@ -188,15 +178,11 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
         colnames(df) = c("lesion_id", "rimneg", "rimpos")
         return(df)
         })
-      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion , "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs, "prl_score" = prl_score)
+      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion , "prl_score" = prl_score)
     }else if(qc_type == "cvs"){
-      brain_imgs = mclapply(img_files, function(x) readnii(x), mc.cores = cores)
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
         if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
-      seg_imgs = mclapply(1:length(seg_imgs), function(x) {
-        if(max(seg_imgs[[x]]) > 1){seg_imgs[[x]] = seg_imgs[[x]]>0}else{seg_imgs[[x]]}
-      }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
         return(lesion_num)
@@ -205,7 +191,7 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
       cvs_files = list.files(main_path, pattern = "cvs_biomarker_lesion.csv", recursive = TRUE, full.names = TRUE)
       cvs_files = cvs_files[which(grepl(subject, cvs_files))]
       cvs_score = lapply(cvs_files, function(x) read_csv(x))
-      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion , "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs, "cvs_score" = cvs_score)
+      qc_list = list("summary_df" = summary_df, "labeled_lesion " = labeled_lesion , "cvs_score" = cvs_score)
     }
   return(qc_list)
 }

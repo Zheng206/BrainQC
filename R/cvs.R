@@ -122,7 +122,7 @@ shinyjs.removeImage = function() {
             shinydashboard::box(
               width = NULL,
               title = "Compile Complete QC result",
-              textInput("file_save_path_com", "Save compiled QC file to:", value = paste0(dir_name, "/WM_lesion_QC_result.csv")),
+              textInput("file_save_path_com", "Save compiled QC file to:", value = paste0(dir_name, "/cvs_QC_result.csv")),
               actionButton("comp", "Compile"),
               verbatimTextOutput("output_msg_file_com")
             )
@@ -291,17 +291,17 @@ shinyjs.removeImage = function() {
         qc_list = result_list()
         if(new_data[i, "lesion_num"] > 0){
           if(input$lesion_id == "all"){
-            papaya(img=list(qc_list$brain_imgs[[i]], qc_list$seg_imgs[[i]]), sync_view = TRUE,
+            papaya(img=list(qc_list$summary_df$img_files[[i]], qc_list$summary_df$seg_files[[i]]), sync_view = TRUE,
                    hide_toolbar = FALSE, hide_controls = TRUE,
                    orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                      papayaOptions(alpha = 0.5, lut = "Red Overlay")))
           }else{
-            papaya(img=list(qc_list$brain_imgs[[i]], qc_list$labeled_lesion[[i]]==as.numeric(gsub("lesion ", "", input$lesion_id))), sync_view = TRUE,
+            papaya(img=list(qc_list$summary_df$img_files[[i]], qc_list$labeled_lesion[[i]]==as.numeric(gsub("lesion ", "", input$lesion_id))), sync_view = TRUE,
                        hide_toolbar = FALSE, hide_controls = TRUE,
                        orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                          papayaOptions(alpha = 0.5, lut = "Red Overlay")))}
         }else{
-          papaya(qc_list$brain_imgs[[i]])
+          papaya(qc_list$summary_df$img_files[[i]])
         }
       }
     })

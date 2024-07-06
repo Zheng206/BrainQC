@@ -292,15 +292,15 @@ shinyjs.removeImage = function() {
     output$image = renderPapaya({
       new_data = dataset()
       i = which(is.na(new_data[["evaluation"]]))[1]
+      shinyjs::js$removeImage()
       if(!is.na(i)){
         qc_list = result_list()
         dict_df = qc_list$dict
-        shinyjs::js$removeImage()
         if(length(grep("Tissue*", input$lesion_id)) > 0){
           roi_id = as.numeric(dict_df[which(dict_df$tissue_seg == gsub("Tissue_", "", input$lesion_id)), "roi_index"])
         }else{roi_id = as.numeric(dict_df[which(dict_df$roi_general == input$lesion_id), "roi_index"])}
         if(length(roi_id) == 1){
-          papaya(img=list(qc_list$brain_imgs[[i]], qc_list$seg_imgs[[i]] == roi_id), sync_view = TRUE,
+          papaya(img=list(qc_list$summary_df$img_files[[i]], qc_list$seg_imgs[[i]] == roi_id), sync_view = TRUE,
                  hide_toolbar = FALSE, hide_controls = TRUE,
                  orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                    papayaOptions(alpha = 0.5, lut = "Overlay (Positives)")))
@@ -310,7 +310,7 @@ shinyjs.removeImage = function() {
           seg_new = seg_data %in% roi_id
           dim(seg_new) = dim(seg_data)
           seg@.Data = seg_new
-          papaya(img=list(qc_list$brain_imgs[[i]], seg), sync_view = TRUE,
+          papaya(img=list(qc_list$summary_df$img_files[[i]], seg), sync_view = TRUE,
                  hide_toolbar = FALSE, hide_controls = TRUE,
                  orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                    papayaOptions(alpha = 0.5, lut = "Overlay (Positives)")))
