@@ -64,7 +64,6 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
           writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
           return(mask)}else{
             mask = seg_imgs[[x]]
-            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
             return(mask)}
         }, mc.cores = cores)
 
@@ -187,7 +186,6 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
           writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
           return(mask)}else{
             mask = seg_imgs[[x]]
-            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
             return(mask)}
       }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
@@ -211,7 +209,6 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
           writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
           return(mask)}else{
             mask = seg_imgs[[x]]
-            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
             return(mask)}
       }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {

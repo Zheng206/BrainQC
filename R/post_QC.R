@@ -195,8 +195,11 @@ shinyjs.removeImage = function() {
                    orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                      papayaOptions(alpha = 0.5, lut = "Red Overlay")))
           }else{
-            labeled_file = gsub(".nii.gz", "_labeled.nii.gz", evaluation_df$seg_files)
-            if(file.exists(labeled_file)){labeled_lesion =readnii(labeled_file)}else{labeled_lesion = readnii(evaluation_df$seg_files)}
+            has_labeled = grep("*_labeled.nii.gz", evaluation_df$seg_files)
+            if(length(has_labeled) == 0){
+              labeled_file = gsub(".nii.gz", "_labeled.nii.gz", evaluation_df$seg_files)
+              if(file.exists(labeled_file)){labeled_lesion =readnii(labeled_file)}else{labeled_lesion = readnii(evaluation_df$seg_files)}
+            }else{labeled_lesion = readnii(evaluation_df$seg_files)}
             papaya(img=list(evaluation_df$img_files, labeled_lesion==as.numeric(gsub("lesion ", "", input$lesion_id))), sync_view = TRUE,
                        hide_toolbar = FALSE, hide_controls = TRUE,
                        orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
