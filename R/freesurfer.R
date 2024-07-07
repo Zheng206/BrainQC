@@ -298,12 +298,12 @@ shinyjs.removeImage = function() {
         dict_df = qc_list$dict
         roi_id = as.numeric(dict_df[which(dict_df$roi_general == input$lesion_id), "roi_index"])
         if(length(roi_id) == 1){
-          papaya(img=list(qc_list$brain_imgs[[i]], qc_list$seg_imgs[[i]] == roi_id), sync_view = TRUE,
+          papaya(img=list(qc_list$summary_df$img_files[[i]], qc_list$seg_imgs[[i]] == roi_id), sync_view = TRUE,
                  hide_toolbar = FALSE, hide_controls = TRUE,
                  orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                    papayaOptions(alpha = 0.5, lut = "Overlay (Positives)")))
         }else if(length(roi_id) == 2){
-          papaya(img=list(qc_list$brain_imgs[[i]], (qc_list$seg_imgs[[i]] == roi_id[1] | qc_list$seg_imgs[[i]] == roi_id[2])), sync_view = TRUE,
+          papaya(img=list(qc_list$summary_df$img_files[[i]], (qc_list$seg_imgs[[i]] == roi_id[1] | qc_list$seg_imgs[[i]] == roi_id[2])), sync_view = TRUE,
                  hide_toolbar = FALSE, hide_controls = TRUE,
                  orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                    papayaOptions(alpha = 0.5, lut = "Overlay (Positives)")))

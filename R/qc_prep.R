@@ -31,7 +31,7 @@ require(freesurfer)
 #' @import ANTsR
 #' @import freesurfer
 #'
-#' @importFrom neurobase readnii
+#' @importFrom neurobase readnii writenii
 #' @importFrom extrantsr ants2oro oro2ants
 #' @importFrom utils head
 #' @importFrom readr read_csv write_csv
@@ -71,8 +71,18 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
       stats_files = list.files(main_path, pattern = "aseg.stat", recursive = TRUE, full.names = TRUE)
       stats_files = stats_files[which(grepl(subject, stats_files))]
       aseg_dfs = mclapply(stats_files, function(x) read_aseg_stats(x)$structures)
-      brain_imgs = mclapply(img_files, function(x) read_mgz(x), mc.cores = cores)
-      seg_imgs = mclapply(seg_files, function(x) read_mgz(x), mc.cores = cores)
+      brain_imgs = mclapply(img_files, function(x){
+        brain_image = read_mgz(x)
+        writenii(brain_image, gsub(".mgz", ".nii.gz", x))
+        return(brain_image)
+        }, mc.cores = cores)
+      seg_imgs = mclapply(seg_files, function(x){
+        seg_img = read_mgz(x)
+        writenii(seg_image, gsub(".mgz", ".nii.gz", x))
+        return(seg_img)
+        }, mc.cores = cores)
+      summary_df$img_files = sapply(summary_df$img_files, function(x) gsub(".mgz", ".nii.gz", x), USE.NAMES = FALSE)
+      summary_df$seg_files = sapply(summary_df$seg_files, function(x) gsub(".mgz", ".nii.gz", x), USE.NAMES = FALSE)
       summary_df$ICV = sapply(stats_files, function(x) round(as.numeric(read_aseg_stats(x)$measures[which(read_aseg_stats(x)$measures$measure == "estimatedtotalintracranialvol"), "value"]), 2), USE.NAMES = FALSE)
       summary_df$evaluator = NA
       roi_name = c("Left-Cerebral-White-Matter", "Left-Cerebral-Cortex", "Left-Lateral-Ventricle", "Left-Inf-Lat-Vent", "Left-Cerebellum-White-Matter",
@@ -92,7 +102,7 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
       }
       roi_index = c(2:5, 7:8, 10:18, 24, 26, 28, 30:31, 41:44, 46:47, 49:54, 58, 60, 62:63, 72)
       index_df = data.frame(cbind(roi_name, roi_index, roi_general, default_roi))
-      qc_list = list("summary_df" = summary_df, "brain_imgs" = brain_imgs, "seg_imgs" = seg_imgs, "dict" = index_df, "stat" = aseg_dfs)
+      qc_list = list("summary_df" = summary_df, "seg_imgs" = seg_imgs, "dict" = index_df, "stat" = aseg_dfs)
     }else if(qc_type == "JLF"){
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       roi_general = c("Corpus Callosum", "Ventral DC", "Ventral DC", "Cerebellar Vermal Lobules", "Cerebellar Vermal Lobules", "Cerebellar Vermal Lobules",
@@ -228,5 +238,5 @@ read_mgz = function(file){
 }
 
 
-utils::globalVariables(c("evaluation", "subject", "volume_mm3"))
+utils::globalVariables(c("evaluation", "subject", "volume_mm3", "brain_image", "seg_image"))
 
