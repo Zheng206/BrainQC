@@ -195,8 +195,8 @@ shinyjs.removeImage = function() {
                    orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
                                                      papayaOptions(alpha = 0.5, lut = "Red Overlay")))
           }else{
-            seg_img = readnii(evaluation_df$seg_files)
-            if(max(seg_img) > 1){labeled_lesion = seg_img}else{labeled_lesion = get_labeled_mask(seg_img)}
+            labeled_file = gsub(".nii.gz", "_labeled.nii.gz", evaluation_df$seg_files)
+            if(file.exists(labeled_file)){labeled_lesion =readnii(labeled_file)}else{labeled_lesion = readnii(evaluation_df$seg_files)}
             papaya(img=list(evaluation_df$img_files, labeled_lesion==as.numeric(gsub("lesion ", "", input$lesion_id))), sync_view = TRUE,
                        hide_toolbar = FALSE, hide_controls = TRUE,
                        orthogonal = TRUE, options = list(papayaOptions(alpha = 0.5),
@@ -283,7 +283,7 @@ shinyjs.removeImage = function() {
                                                                   backgroundColor = styleEqual(c("fail"), "lightyellow")
                                                                 )
         }else{
-          prl_pro = read_csv(list.files(paste0(str_split(evaluation_df$img_files[1], "/data/")[[1]][1], "/data/", input$subject, "/", input$session, "/prl"), pattern = "*_pred.csv", recursive = TRUE, full.names = TRUE))
+          prl_pro = read_csv(list.files(paste0(str_split(evaluation_df$img_files[1], "/data/")[[1]][1], "/data/", input$subject, "/", input$session, "/prl"), pattern = "*_preds.csv", recursive = TRUE, full.names = TRUE))
           prl_pro = prl_pro %>% mutate(lesion_id = 1:nrow(prl_pro)) %>% filter(lesion_id ==  as.numeric(str_split(input$lesion_id, " ")[[1]][2]))
           evaluation_df %>% dplyr::select(selected_column) %>% mutate(lesion_id = prl_pro$lesion_id, prl.probability = round(prl_pro$rimpos, 3)) %>%
             DT::datatable(options = list(columnDefs = list(list(className = 'dt-center',

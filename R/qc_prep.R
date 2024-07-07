@@ -59,7 +59,14 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
     if(qc_type == "lesion"){
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
-        if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
+        if(max(seg_imgs[[x]]) == 1){
+          mask = get_labeled_mask(seg_imgs[[x]])
+          writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+          return(mask)}else{
+            mask = seg_imgs[[x]]
+            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+            return(mask)}
+        }, mc.cores = cores)
 
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
@@ -175,7 +182,14 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
     }else if(qc_type == "PRL"){
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
-        if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
+        if(max(seg_imgs[[x]]) == 1){
+          mask = get_labeled_mask(seg_imgs[[x]])
+          writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+          return(mask)}else{
+            mask = seg_imgs[[x]]
+            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+            return(mask)}
+      }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
         return(lesion_num)
@@ -192,7 +206,14 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
     }else if(qc_type == "cvs"){
       seg_imgs = mclapply(seg_files, function(x) readnii(x), mc.cores = cores)
       labeled_lesion = mclapply(1:nrow(summary_df), function(x) {
-        if(max(seg_imgs[[x]]) == 1){get_labeled_mask(seg_imgs[[x]])}else{seg_imgs[[x]]}}, mc.cores = cores)
+        if(max(seg_imgs[[x]]) == 1){
+          mask = get_labeled_mask(seg_imgs[[x]])
+          writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+          return(mask)}else{
+            mask = seg_imgs[[x]]
+            writenii(mask, gsub(".nii.gz","_labeled.nii.gz", seg_files[[x]]))
+            return(mask)}
+      }, mc.cores = cores)
       summary_df$lesion_num = sapply(1:nrow(summary_df), function(x) {
         lesion_num = max(labeled_lesion[[x]])
         return(lesion_num)
