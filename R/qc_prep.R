@@ -78,7 +78,7 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
         }, mc.cores = cores)
       seg_imgs = mclapply(seg_files, function(x){
         seg_img = read_mgz(x)
-        writenii(seg_image, gsub(".mgz", ".nii.gz", x))
+        writenii(seg_img, gsub(".mgz", ".nii.gz", x))
         return(seg_img)
         }, mc.cores = cores)
       summary_df$img_files = sapply(summary_df$img_files, function(x) gsub(".mgz", ".nii.gz", x), USE.NAMES = FALSE)
@@ -238,5 +238,5 @@ read_mgz = function(file){
 }
 
 
-utils::globalVariables(c("evaluation", "subject", "volume_mm3", "brain_image", "seg_image"))
+utils::globalVariables(c("evaluation", "subject", "volume_mm3"))
 
