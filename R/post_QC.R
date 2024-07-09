@@ -108,6 +108,14 @@ shinyjs.removeImage = function() {
                                selectInput("type", "Choose the QC type:", choices = names(qc_files), selected = names(qc_files)[1]),
                                uiOutput("defaultseg")
                              )
+                           ),
+                           fluidRow(
+                             shinydashboard::box(
+                               width = NULL,
+                               title = "Save QC Results",
+                               uiOutput("save_message"),
+                               actionButton("save", "Save")
+                             )
                            )
           ),
           conditionalPanel(condition="input.tabselected==2",
@@ -134,7 +142,17 @@ shinyjs.removeImage = function() {
                              shinydashboard::box(
                                width = 12,
                                title = "Segmentation Investigation",
-                               uiOutput("lesion_invest")))
+                               uiOutput("lesion_invest"))),
+                           fluidRow(
+                             shinydashboard::box(
+                               width = NULL,
+                               actionButton("pass", "PASS"),
+                               actionButton("fail", "FAIL"))),
+                           fluidRow(
+                             shinydashboard::box(
+                               width = NULL,
+                               title = "Notes",
+                               textInput("note", "Add additional notes:", value = "")))
           )
         ),
         mainPanel(
@@ -155,7 +173,7 @@ shinyjs.removeImage = function() {
   }
 
   server = function(input, output, session) {
-
+    result_list = reactiveVal(qc_files)
     output$defaultseg = renderUI({
       if(input$type == "freesurfer"){
         rois = sort(unique(free_index_df$free_roi_general))
@@ -175,7 +193,8 @@ shinyjs.removeImage = function() {
     })
 
     output$evaluation = DT::renderDT({
-      evaluation_df = qc_files[[input$type]]
+      qc_files_new = result_list()
+      evaluation_df = qc_files_new[[input$type]]
       evaluation_df %>% DT::datatable(options = list(columnDefs = list(list(className = 'dt-center', targets = "_all")))) %>% formatStyle(
         'evaluation',
         target = 'row',
@@ -183,9 +202,27 @@ shinyjs.removeImage = function() {
       )
     })
 
+    output$save_message = renderUI({
+      HTML("Please click on the save button if you wish to save all the changes to the evaluation file! <br><br>")
+
+    })
+
+    observeEvent(input$save, {
+      qc_files_new = result_list()
+      dirname = list.files(main_path, pattern = paste0(input$type, "_QC_result.csv"), recursive = TRUE, full.names = TRUE)
+      msg = sprintf('Saving Data...')
+      withProgress(message = msg, value = 0, {
+        setProgress(0.5, 'Saving...')
+        write_csv(qc_files_new[[input$type]], dirname)
+        setProgress(1, 'Complete!')
+      })
+      showNotification('Data successfully saved!', type = "message")
+    })
+
     output$image = renderPapaya({
       shinyjs::js$removeImage()
-      evaluation_df = qc_files[[input$type]] %>% filter(subject == input$subject, session == input$session)
+      qc_files_new = result_list()
+      evaluation_df = qc_files_new[[input$type]] %>% filter(subject == input$subject, session == input$session)
       if(input$type %in% c("cvs", "lesion", "PRL")){
         lesion_num = evaluation_df %>% filter(subject == input$subject, session == input$session) %>% pull(lesion_num)
         if(lesion_num > 0){
@@ -246,9 +283,26 @@ shinyjs.removeImage = function() {
       }
     })
 
+    observeEvent(input$pass, {
+      qc_files_new = result_list()
+      qc_files_new[[input$type]][which(qc_files_new[[input$type]]$subject == input$subject & qc_files_new[[input$type]]$session == input$session), "evaluation"] = "pass"
+      qc_files_new[[input$type]][which(qc_files_new[[input$type]]$subject == input$subject & qc_files_new[[input$type]]$session == input$session), "note"] = input$note
+      result_list(qc_files_new)
+      updateTextInput(session, "note", value = "")
+    })
+
+    observeEvent(input$fail, {
+      qc_files_new = result_list()
+      qc_files_new[[input$type]][which(qc_files_new[[input$type]]$subject == input$subject & qc_files_new[[input$type]]$session == input$session), "evaluation"] = "fail"
+      qc_files_new[[input$type]][which(qc_files_new[[input$type]]$subject == input$subject & qc_files_new[[input$type]]$session == input$session), "note"] = input$note
+      result_list(qc_files_new)
+      updateTextInput(session, "note", value = "")
+    })
+
 
     output$info = DT::renderDT({
-      evaluation_df = qc_files[[input$type]] %>% filter(subject == input$subject, session == input$session)
+      qc_files_new = result_list()
+      evaluation_df = qc_files_new[[input$type]] %>% filter(subject == input$subject, session == input$session)
       if(input$type == "lesion"){
         selected_column = c("subject", "session", "lesion_num", "evaluation", "note")
         evaluation_df %>% dplyr::select(selected_column) %>%
@@ -337,7 +391,8 @@ shinyjs.removeImage = function() {
     })
 
     output$lesion_invest = renderUI({
-      evaluation_df = qc_files[[input$type]]
+      qc_files_new = result_list()
+      evaluation_df = qc_files_new[[input$type]]
       if(input$type %in% c("cvs", "lesion", "PRL")){
         lesion_num = evaluation_df %>% filter(subject == input$subject, session == input$session) %>% pull(lesion_num)
         if(lesion_num > 0){

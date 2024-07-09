@@ -76,7 +76,18 @@ stage1_qc = function(main_path, img_name, seg_name, subject, cores = 1, qc_type 
     }else if(qc_type == "freesurfer"){
       stats_files = list.files(main_path, pattern = "aseg.stat", recursive = TRUE, full.names = TRUE)
       stats_files = stats_files[which(grepl(subject, stats_files))]
-      aseg_dfs = mclapply(stats_files, function(x) read_aseg_stats(x)$structures)
+      aseg_dfs = mclapply(stats_files, function(x){
+        structure = read_aseg_stats(x)$structures
+        measure = read_aseg_stats(x)$measures
+        lhcortex = round(as.numeric(measure[which(measure$measure == "lhcortex"), "value"]),2)
+        rhcortex = round(as.numeric(measure[which(measure$measure == "rhcortex"), "value"]),2)
+        lhcerebralwhitematter = round(as.numeric(measure[which(measure$measure == "lhcerebralwhitematter"), "value"]),2)
+        rhcerebralwhitematter = round(as.numeric(measure[which(measure$measure == "rhcerebralwhitematter"), "value"]),2)
+        additional = data.frame(Index = c(46, 47, 48, 49), SegId = c(2,41,3,42), NVoxels = c(lhcerebralwhitematter, rhcerebralwhitematter, lhcortex, rhcortex), Volume_mm3 = c(lhcerebralwhitematter, rhcerebralwhitematter, lhcortex, rhcortex),
+                                StructName = c("Left-Cerebral-White-Matter", "Right-Cerebral-White-Matter", "Left-Cerebral-Cortex", "Right-Cerebral-Cortex"), normMean = rep(0, 4), normStdDev = rep(0, 4), normMin = rep(0, 4), normMax = rep(0, 4), normRange = rep(0, 4))
+        structure = rbind(structure, additional)
+        return(structure)
+        })
       brain_imgs = mclapply(img_files, function(x){
         brain_image = read_mgz(x)
         writenii(brain_image, gsub(".mgz", ".nii.gz", x))
